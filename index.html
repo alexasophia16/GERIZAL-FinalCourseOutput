@@ -41,7 +41,7 @@
 
     <main class="main row g-4">
 
-      <!-- Left column: board, cast, rules -->
+      <!-- Left column: board, rules -->
       <div class="side col-lg-7 d-flex flex-column gap-4">
         <section class="boardbox">
           <div class="board" id="board" aria-label="Game board, spaces 1 to 50"></div>
@@ -53,20 +53,26 @@
         </section>
 
         <section class="panel">
-          <h2>The cast</h2>
-          <div class="cast" id="cast"></div>
-        </section>
-
-        <section class="panel">
-          <h2>Rules</h2>
+          <h2>Rules and scoring</h2>
           <ul class="rules mb-0">
             <li>Take turns rolling one die and moving that many spaces.</li>
             <li>Normal spaces have no effect.</li>
             <li>On a <strong>Character Checkpoint</strong>, pick 1 of 3 character cards and answer its question.</li>
-            <li><strong>Easy ±2</strong>, <strong>Medium ±4</strong>, <strong>Hard ±6</strong>. Right answer: rise forward. Wrong answer: fall back.</li>
-            <li>Moving after a question never triggers another checkpoint.</li>
-            <li>The first player to reach space 50 wins.</li>
+            <li>Right answer: rise forward. Wrong answer: fall back (never below space 1).</li>
+            <li>If you rise or fall onto another Character Checkpoint, it doesn't count. Your turn ends there.</li>
+            <li>The first player to reach space 50 wins. An exact roll is not needed.</li>
           </ul>
+
+          <table class="scoring">
+            <thead>
+              <tr><th scope="col">Card</th><th scope="col">Correct</th><th scope="col">Wrong</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><span class="lv e">Easy</span></td><td>+2 spaces</td><td>−2 spaces</td></tr>
+              <tr><td><span class="lv m">Medium</span></td><td>+4 spaces</td><td>−4 spaces</td></tr>
+              <tr><td><span class="lv h">Hard</span></td><td>+6 spaces</td><td>−6 spaces</td></tr>
+            </tbody>
+          </table>
         </section>
       </div>
 
@@ -89,6 +95,13 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- Character Checkpoint modal (static so a question can't be dismissed mid-turn) -->
+  <div class="modal fade" id="cpModal" tabindex="-1" aria-labelledby="cpTitle" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content stage cp-modal" id="cp" aria-live="polite"></div>
+    </div>
   </div>
 
   <!-- Bootstrap 5 JS -->
