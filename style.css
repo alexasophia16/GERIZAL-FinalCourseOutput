@@ -1,0 +1,543 @@
+/* ---------- Variables ---------- */
+:root {
+  /* Palette */
+  --table: #12261f;
+  --felt: #1a3a2f;
+  --edge: #2f5a4a;
+  --capiz: #eef0e6;
+  --capiz2: #dfe3d4;
+  --gold: #e0b04a;
+  --gold-light: #e8c066;
+  --gold-dark: #c99a38;
+  --red: #c8553d;
+  --green: #58b37f;
+  --ink: #1b211d;
+  --muted: #9fb8ad;
+
+  /* Fonts */
+  --display: "IM Fell English SC", Georgia, serif;
+  --read: "IM Fell English", Georgia, serif;
+  --body: "Nunito Sans", system-ui, sans-serif;
+
+  color-scheme: dark;
+
+  /* Bootstrap theme overrides */
+  --bs-body-bg: var(--table);
+  --bs-body-color: var(--capiz);
+  --bs-body-font-family: var(--body);
+  --bs-body-font-size: 15px;
+  --bs-body-line-height: 1.45;
+  --bs-border-color: var(--edge);
+  --bs-secondary-color: var(--muted);
+  --bs-emphasis-color: var(--capiz);
+  --bs-link-color: var(--gold);
+  --bs-link-hover-color: var(--gold);
+  --bs-focus-ring-color: rgba(238, 240, 230, 0.5);
+}
+
+/* ---------- Header ---------- */
+.wrap {
+  max-width: 1140px;
+}
+
+header {
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--gold);
+  text-wrap: balance;
+}
+
+.sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.setup {
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---------- Form controls ---------- */
+.form-select {
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23eef0e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-color: var(--felt);
+  color: var(--capiz);
+  border-color: var(--edge);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.form-select:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 0.2rem rgba(224, 176, 74, 0.25);
+}
+
+.form-select option {
+  background: var(--felt);
+  color: var(--capiz);
+}
+
+/* ---------- Buttons ---------- */
+/* Restyled through Bootstrap's own variables so hover/active/disabled states stay on-theme */
+.btn {
+  --bs-btn-padding-x: 16px;
+  --bs-btn-padding-y: 10px;
+  --bs-btn-font-size: 15px;
+  --bs-btn-font-weight: 700;
+  --bs-btn-border-radius: 8px;
+  --bs-btn-focus-box-shadow: none;
+
+  --bs-btn-bg: var(--gold);
+  --bs-btn-color: var(--ink);
+  --bs-btn-border-color: var(--gold);
+
+  --bs-btn-hover-bg: var(--gold-light);
+  --bs-btn-hover-color: var(--ink);
+  --bs-btn-hover-border-color: var(--gold-light);
+
+  --bs-btn-active-bg: var(--gold-dark);
+  --bs-btn-active-color: var(--ink);
+  --bs-btn-active-border-color: var(--gold-dark);
+
+  --bs-btn-disabled-bg: var(--gold);
+  --bs-btn-disabled-color: var(--ink);
+  --bs-btn-disabled-border-color: var(--gold);
+  --bs-btn-disabled-opacity: 0.4;
+}
+
+.btn.alt {
+  --bs-btn-bg: transparent;
+  --bs-btn-color: var(--capiz);
+  --bs-btn-border-color: var(--edge);
+
+  --bs-btn-hover-bg: rgba(238, 240, 230, 0.08);
+  --bs-btn-hover-color: var(--capiz);
+  --bs-btn-hover-border-color: var(--muted);
+
+  --bs-btn-active-bg: rgba(238, 240, 230, 0.14);
+  --bs-btn-active-color: var(--capiz);
+  --bs-btn-active-border-color: var(--muted);
+}
+
+.btn-sm {
+  --bs-btn-padding-x: 12px;
+  --bs-btn-padding-y: 5px;
+  --bs-btn-font-size: 13px;
+}
+
+.btn:focus-visible,
+.card:focus-visible,
+.opt:focus-visible {
+  outline: 3px solid var(--capiz);
+  outline-offset: 2px;
+}
+
+/* ---------- Board ---------- */
+.boardbox {
+  padding: 10px;
+  background: var(--felt);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  padding: 3px 4px;
+  background: var(--capiz);
+  color: var(--ink);
+  border-radius: 6px;
+}
+
+.tile:nth-child(odd) {
+  background: var(--capiz2);
+}
+
+.tile .n {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile .lbl {
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tile.cp {
+  background: var(--gold);
+}
+
+.tile.cp .n {
+  opacity: 0.8;
+}
+
+.tile.cp .ic {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  font-family: var(--display);
+  font-size: 11px;
+}
+
+.tile.start {
+  background: #bfd8c8;
+}
+
+.tile.finish {
+  background: var(--red);
+  color: #fff;
+}
+
+.tile.flash {
+  outline: 3px solid var(--capiz);
+  outline-offset: 1px;
+}
+
+.tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.tok {
+  width: clamp(9px, 1.5vw, 15px);
+  height: clamp(9px, 1.5vw, 15px);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.legend {
+  padding: 0 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend i {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 5px;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+/* ---------- Panels ---------- */
+.panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  background: var(--felt);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+}
+
+.panel h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--gold);
+}
+
+/* ---------- Players ---------- */
+.players {
+  display: grid;
+  gap: 6px;
+}
+
+.pl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.pl.turn {
+  border-color: var(--gold);
+  background: rgba(224, 176, 74, 0.08);
+}
+
+.pl .tok {
+  flex: none;
+}
+
+.pl .pos {
+  margin-left: auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pl input {
+  width: 9em;
+  padding: 1px 0;
+  background: transparent;
+  color: var(--capiz);
+  font: inherit;
+  border: 0;
+  border-bottom: 1px dashed var(--edge);
+}
+
+.pl input:focus {
+  outline: none;
+  border-bottom-color: var(--gold);
+}
+
+/* ---------- Die & status ---------- */
+.die {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  background: var(--capiz);
+  color: var(--ink);
+  border-radius: 12px;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.die.spin {
+  animation: wob 0.45s ease-in-out;
+}
+
+@keyframes wob {
+  0%   { transform: rotate(0); }
+  30%  { transform: rotate(-14deg); }
+  60%  { transform: rotate(10deg); }
+  100% { transform: rotate(0); }
+}
+
+.status {
+  min-height: 1.4em;
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.status b,
+.status strong {
+  color: var(--capiz);
+}
+
+/* ---------- Question stage ---------- */
+.stage {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--capiz);
+  color: var(--ink);
+  border-radius: 12px;
+}
+
+.stage h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.stage p {
+  margin: 0;
+}
+
+.stage .read {
+  font-family: var(--read);
+  font-size: 16px;
+}
+
+.qhead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.win {
+  font-family: var(--display);
+  font-size: 30px;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+/* ---------- Character cards ---------- */
+/* Overrides Bootstrap's .card component, which shares the name */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.card {
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  height: auto;
+  min-height: 118px;
+  padding: 12px 8px;
+  background: var(--table);
+  color: #fff;
+  text-align: center;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card .who {
+  font-family: var(--display);
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.card .role {
+  font-size: 11px;
+  line-height: 1.25;
+  opacity: 0.75;
+}
+
+.card .lv {
+  justify-self: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Difficulty badges */
+.lv.e { background: #cfe8d9; color: #1e4d33; }
+.lv.m { background: #f2dfae; color: #5d4410; }
+.lv.h { background: #f1c6bc; color: #6b2214; }
+
+/* ---------- Answer options ---------- */
+.opts {
+  display: grid;
+  gap: 7px;
+}
+
+.opt {
+  padding: 9px 12px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  border: 1px solid #c9cfbf;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.opt:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.opt:disabled {
+  cursor: default;
+}
+
+.opt.right {
+  background: #d7efe0;
+  border-color: var(--green);
+}
+
+.opt.wrong {
+  background: #f6d6cf;
+  border-color: var(--red);
+}
+
+/* ---------- Feedback notes ---------- */
+.note {
+  padding: 8px 10px;
+  background: #e4e8da;
+  border-left: 4px solid var(--gold);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.note.up   { border-left-color: var(--green); }
+.note.down { border-left-color: var(--red); }
+
+/* ---------- Cast ---------- */
+.cast {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 10px;
+}
+
+.cast figure {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 5px;
+  margin: 0;
+  text-align: center;
+}
+
+.cast figcaption {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.cast figcaption span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ---------- Rules ---------- */
+.rules {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.rules b,
+.rules strong {
+  font-weight: 600;
+  color: var(--capiz);
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .card:hover { transform: none; }
+  .die.spin   { animation: none; }
+}
