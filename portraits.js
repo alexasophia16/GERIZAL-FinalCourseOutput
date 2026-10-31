@@ -7,7 +7,7 @@
     brow            angry | sad | flat
     hat             salakot | kepi
     rx              face width (default 17)
-    child           scale factor for younger characters (e.g. 0.9)
+    child           scale factor for younger characters
     stache, beard   colour of facial hair
     lash, blush, rouge, tears, glasses, cross, pearls, cigar   set to 1 to add
 */
@@ -27,7 +27,7 @@ const LOOKS = {
   "Doña Consolación":  { bg: "#c9a3a0", skin: "#d4a684", hair: "#221c18", hs: "pulled",  outfit: "dark",      mouth: "frown", brow: "angry", cigar: 1 },
 };
 
-/* ---------- Shapes that don't depend on the face width ---------- */
+/* ---------- Clothes ---------- */
 const SHOULDERS = "M14 100 Q16 72 50 68 Q84 72 86 100Z";
 const SHOULDERS_WIDE = "M12 100 Q14 72 50 68 Q86 72 88 100Z";
 
@@ -73,6 +73,7 @@ const OUTFITS = {
     `<path d="M20 82 Q50 96 80 82 L80 88 Q50 102 20 88Z" fill="#5e4c50"/>`,
 };
 
+/* ---------- Face parts ---------- */
 const BROWS = {
   angry: "M39 38 L46 41 M61 38 L54 41",
   sad:   "M39 41 L46 39 M61 41 L54 39",
@@ -86,6 +87,45 @@ const MOUTHS = {
   thin:  "M47 57 L53 57",
 };
 
+const EYES =
+  `<circle cx="43" cy="45" r="1.9" fill="#1b1512"/>` +
+  `<circle cx="57" cy="45" r="1.9" fill="#1b1512"/>`;
+
+const NOSE = `<path d="M50 46 Q48 51 50 52" fill="none" stroke="#7a4f36" stroke-width="1" opacity=".6"/>`;
+
+const LIPS = `<path d="M45 56 Q50 54 55 56 Q50 60 45 56Z" fill="#c0263c"/>`;
+
+// Optional extras, switched on by setting the flag to 1 in LOOKS
+const EXTRAS = {
+  lash:
+    `<path d="M40 43 l-1.5 -1.5 M60 43 l1.5 -1.5" stroke="#1b1512" stroke-width="1"/>`,
+  glasses:
+    `<circle cx="43" cy="45" r="5" fill="none" stroke="#3a3a3a" stroke-width="1.1"/>` +
+    `<circle cx="57" cy="45" r="5" fill="none" stroke="#3a3a3a" stroke-width="1.1"/>` +
+    `<path d="M48 45 L52 45" stroke="#3a3a3a" stroke-width="1.1"/>`,
+  blush:
+    `<circle cx="39" cy="51" r="3" fill="#e07a6a" opacity=".35"/>` +
+    `<circle cx="61" cy="51" r="3" fill="#e07a6a" opacity=".35"/>`,
+  rouge:
+    `<circle cx="39" cy="51" r="4" fill="#e0607a" opacity=".6"/>` +
+    `<circle cx="61" cy="51" r="4" fill="#e0607a" opacity=".6"/>`,
+  tears:
+    `<path d="M42 49 q-1.5 3 0 4.5 q1.5 -1.5 0 -4.5Z M58 49 q-1.5 3 0 4.5 q1.5 -1.5 0 -4.5Z" fill="#7fb4d8"/>`,
+  cigar:
+    `<rect x="54" y="56" width="12" height="2.6" rx="1" fill="#6b4226" transform="rotate(12 54 57)"/>` +
+    `<circle cx="66" cy="59.4" r="1.2" fill="#e36b2c"/>`,
+  cross:
+    `<path d="M50 80 L50 92 M45.5 84 L54.5 84" stroke="#d9a441" stroke-width="2.2" stroke-linecap="round"/>`,
+  pearls:
+    Array.from({ length: 7 }, (_, i) =>
+      `<circle cx="${41 + i * 3}" cy="${70 + Math.sin(i / 6 * Math.PI) * 4}" r="1.6" fill="#fff"/>`
+    ).join(""),
+};
+
+// Returns the extra only if the character has that flag
+const extra = (look, key) => (look[key] ? EXTRAS[key] : "");
+
+/* ---------- Hats ---------- */
 const HATS = {
   salakot:
     `<path d="M16 34 Q50 2 84 34 Q50 26 16 34Z" fill="#c9a65a"/>` +
@@ -96,94 +136,107 @@ const HATS = {
     `<rect x="34" y="24" width="32" height="2" fill="#d9a441"/>`,
 };
 
-/* ---------- Hair (depends on face width) ---------- */
+/* ---------- Hair ---------- */
 // Hair drawn behind the head
-function backHair(hs, hr) {
-  switch (hs) {
-    case "wild":   return `<path d="M28 52 Q24 18 50 20 Q76 18 72 52 L76 74 Q66 66 66 52 L34 52 Q34 66 24 74Z" fill="${hr}"/>`;
-    case "bun":    return `<circle cx="50" cy="21" r="9" fill="${hr}"/><path d="M40 16 Q50 8 60 16" stroke="#d9a441" stroke-width="2.4" fill="none"/>`;
-    case "pulled": return `<circle cx="66" cy="30" r="7" fill="${hr}"/>`;
-    default:       return "";
+function backHair(style, hair) {
+  switch (style) {
+    case "wild":
+      return `<path d="M28 52 Q24 18 50 20 Q76 18 72 52 L76 74 Q66 66 66 52 L34 52 Q34 66 24 74Z" fill="${hair}"/>`;
+    case "bun":
+      return `<circle cx="50" cy="21" r="9" fill="${hair}"/>` +
+             `<path d="M40 16 Q50 8 60 16" stroke="#d9a441" stroke-width="2.4" fill="none"/>`;
+    case "pulled":
+      return `<circle cx="66" cy="30" r="7" fill="${hair}"/>`;
+    default:
+      return "";
   }
 }
 
 // Hair drawn over the head; L and R are the left and right edges of the face
-function frontHair(hs, hr, L, R) {
-  switch (hs) {
+function frontHair(style, hair, L, R) {
+  switch (style) {
     case "part":
-      return `<path d="M${L} 44 Q${L - 1} 22 50 22 Q${R + 1} 22 ${R} 42 Q${R - 4} 30 56 30 Q44 33 ${L + 3} 36 Q${L} 39 ${L} 44Z" fill="${hr}"/>`;
+      return `<path d="M${L} 44 Q${L - 1} 22 50 22 Q${R + 1} 22 ${R} 42 Q${R - 4} 30 56 30 Q44 33 ${L + 3} 36 Q${L} 39 ${L} 44Z" fill="${hair}"/>`;
     case "short":
-      return `<path d="M${L} 42 Q${L} 22 50 22 Q${R} 22 ${R} 42 Q${R - 3} 31 50 30 Q${L + 3} 31 ${L} 42Z" fill="${hr}"/>`;
+      return `<path d="M${L} 42 Q${L} 22 50 22 Q${R} 22 ${R} 42 Q${R - 3} 31 50 30 Q${L + 3} 31 ${L} 42Z" fill="${hair}"/>`;
     case "bun":
-      return `<path d="M${L - 1} 48 Q${L - 2} 24 50 25 Q${R + 2} 24 ${R + 1} 48 Q${R - 2} 32 50 31 Q${L + 2} 32 ${L - 1} 48Z" fill="${hr}"/>`;
+      return `<path d="M${L - 1} 48 Q${L - 2} 24 50 25 Q${R + 2} 24 ${R + 1} 48 Q${R - 2} 32 50 31 Q${L + 2} 32 ${L - 1} 48Z" fill="${hair}"/>`;
     case "wild":
-      return `<path d="M${L - 1} 46 Q${L} 24 50 24 Q${R} 24 ${R + 1} 46 Q${R - 4} 34 56 32 Q50 36 44 32 Q${L + 4} 34 ${L - 1} 46Z" fill="${hr}"/>`;
+      return `<path d="M${L - 1} 46 Q${L} 24 50 24 Q${R} 24 ${R + 1} 46 Q${R - 4} 34 56 32 Q50 36 44 32 Q${L + 4} 34 ${L - 1} 46Z" fill="${hair}"/>`;
     case "tonsure":
-      return `<ellipse cx="${L + 2}" cy="38" rx="4" ry="8" fill="${hr}"/><ellipse cx="${R - 2}" cy="38" rx="4" ry="8" fill="${hr}"/>`;
+      return `<ellipse cx="${L + 2}" cy="38" rx="4" ry="8" fill="${hair}"/>` +
+             `<ellipse cx="${R - 2}" cy="38" rx="4" ry="8" fill="${hair}"/>`;
     case "thin":
-      return `<path d="M${L} 40 Q${L + 1} 28 ${L + 8} 27 L${L + 6} 38Z M${R} 40 Q${R - 1} 28 ${R - 8} 27 L${R - 6} 38Z" fill="${hr}"/>`;
+      return `<path d="M${L} 40 Q${L + 1} 28 ${L + 8} 27 L${L + 6} 38Z M${R} 40 Q${R - 1} 28 ${R - 8} 27 L${R - 6} 38Z" fill="${hair}"/>`;
     case "curly":
-      return [...Array(7)].map((_, i) => {
+      return Array.from({ length: 7 }, (_, i) => {
         const a = Math.PI * (1.05 + i * 0.15);
-        return `<circle cx="${50 + 20 * Math.cos(a)}" cy="${42 + 20 * Math.sin(a)}" r="6.5" fill="${hr}"/>`;
+        return `<circle cx="${50 + 20 * Math.cos(a)}" cy="${42 + 20 * Math.sin(a)}" r="6.5" fill="${hair}"/>`;
       }).join("");
     case "bald":
-      return `<ellipse cx="${L + 1}" cy="42" rx="4" ry="6" fill="${hr}"/><ellipse cx="${R - 1}" cy="42" rx="4" ry="6" fill="${hr}"/>`;
+      return `<ellipse cx="${L + 1}" cy="42" rx="4" ry="6" fill="${hair}"/>` +
+             `<ellipse cx="${R - 1}" cy="42" rx="4" ry="6" fill="${hair}"/>`;
     case "pulled":
-      return `<path d="M${L} 44 Q${L} 24 50 24 Q${R} 24 ${R} 44 Q${R - 3} 31 50 30 Q${L + 3} 31 ${L} 44Z" fill="${hr}"/>`;
+      return `<path d="M${L} 44 Q${L} 24 50 24 Q${R} 24 ${R} 44 Q${R - 3} 31 50 30 Q${L + 3} 31 ${L} 44Z" fill="${hair}"/>`;
     default:
       return "";
   }
 }
 
 /* ---------- Portrait ---------- */
-// Returns an SVG string for the named character at the given pixel size
+// Returns an SVG string for the named character at the given pixel size.
+// Parts are layered back to front, so the order below matters.
 function portrait(name, size) {
-  const c = LOOKS[name] || {};
-  const sk = c.skin;
-  const hr = c.hair;
-  const rx = c.rx || 17;
+  const look = LOOKS[name] || {};
+  const { skin, hair } = look;
+  const rx = look.rx || 17;
   const L = 50 - rx;
   const R = 50 + rx;
-  let f = "";
 
-  // Body and neck
-  f += OUTFITS[c.outfit] || "";
-  f += `<rect x="44" y="58" width="12" height="14" fill="${sk}"/>`;
+  const parts = [
+    // Body and neck
+    OUTFITS[look.outfit] || "",
+    `<rect x="44" y="58" width="12" height="14" fill="${skin}"/>`,
 
-  // Head
-  f += backHair(c.hs, hr);
-  f += `<ellipse cx="${L}" cy="47" rx="3.5" ry="5" fill="${sk}"/><ellipse cx="${R}" cy="47" rx="3.5" ry="5" fill="${sk}"/>`;
-  f += `<ellipse cx="50" cy="45" rx="${rx}" ry="20" fill="${sk}"/>`;
-  f += frontHair(c.hs, hr, L, R);
-  if (c.beard) f += `<path d="M${L + 2} 50 Q${L + 4} 74 50 76 Q${R - 4} 74 ${R - 2} 50 Q${R - 8} 60 50 61 Q${L + 8} 60 ${L + 2} 50Z" fill="${c.beard}"/>`;
+    // Head: back hair, ears, face, front hair, beard
+    backHair(look.hs, hair),
+    `<ellipse cx="${L}" cy="47" rx="3.5" ry="5" fill="${skin}"/>`,
+    `<ellipse cx="${R}" cy="47" rx="3.5" ry="5" fill="${skin}"/>`,
+    `<ellipse cx="50" cy="45" rx="${rx}" ry="20" fill="${skin}"/>`,
+    frontHair(look.hs, hair, L, R),
+    look.beard ? `<path d="M${L + 2} 50 Q${L + 4} 74 50 76 Q${R - 4} 74 ${R - 2} 50 Q${R - 8} 60 50 61 Q${L + 8} 60 ${L + 2} 50Z" fill="${look.beard}"/>` : "",
 
-  // Eyes and brows
-  if (BROWS[c.brow]) f += `<path d="${BROWS[c.brow]}" stroke="#2a211c" stroke-width="1.6" stroke-linecap="round"/>`;
-  f += `<circle cx="43" cy="45" r="1.9" fill="#1b1512"/><circle cx="57" cy="45" r="1.9" fill="#1b1512"/>`;
-  if (c.lash)    f += `<path d="M40 43 l-1.5 -1.5 M60 43 l1.5 -1.5" stroke="#1b1512" stroke-width="1"/>`;
-  if (c.glasses) f += `<circle cx="43" cy="45" r="5" fill="none" stroke="#3a3a3a" stroke-width="1.1"/><circle cx="57" cy="45" r="5" fill="none" stroke="#3a3a3a" stroke-width="1.1"/><path d="M48 45 L52 45" stroke="#3a3a3a" stroke-width="1.1"/>`;
+    // Brows and eyes
+    BROWS[look.brow] ? `<path d="${BROWS[look.brow]}" stroke="#2a211c" stroke-width="1.6" stroke-linecap="round"/>` : "",
+    EYES,
+    extra(look, "lash"),
+    extra(look, "glasses"),
 
-  // Cheeks
-  if (c.blush) f += `<circle cx="39" cy="51" r="3" fill="#e07a6a" opacity=".35"/><circle cx="61" cy="51" r="3" fill="#e07a6a" opacity=".35"/>`;
-  if (c.rouge) f += `<circle cx="39" cy="51" r="4" fill="#e0607a" opacity=".6"/><circle cx="61" cy="51" r="4" fill="#e0607a" opacity=".6"/>`;
-  if (c.tears) f += `<path d="M42 49 q-1.5 3 0 4.5 q1.5 -1.5 0 -4.5Z M58 49 q-1.5 3 0 4.5 q1.5 -1.5 0 -4.5Z" fill="#7fb4d8"/>`;
+    // Cheeks
+    extra(look, "blush"),
+    extra(look, "rouge"),
+    extra(look, "tears"),
 
-  // Nose and mouth
-  f += `<path d="M50 46 Q48 51 50 52" fill="none" stroke="#7a4f36" stroke-width="1" opacity=".6"/>`;
-  if (c.stache) f += `<path d="M42 55 Q50 51 58 55 Q50 57 42 55Z" fill="${c.stache}"/>`;
-  if (MOUTHS[c.mouth]) f += `<path d="${MOUTHS[c.mouth]}" fill="none" stroke="#5a2e22" stroke-width="1.5" stroke-linecap="round"/>`;
-  if (c.mouth === "lips") f += `<path d="M45 56 Q50 54 55 56 Q50 60 45 56Z" fill="#c0263c"/>`;
-  if (c.cigar) f += `<rect x="54" y="56" width="12" height="2.6" rx="1" fill="#6b4226" transform="rotate(12 54 57)"/><circle cx="66" cy="59.4" r="1.2" fill="#e36b2c"/>`;
+    // Nose and mouth
+    NOSE,
+    look.stache ? `<path d="M42 55 Q50 51 58 55 Q50 57 42 55Z" fill="${look.stache}"/>` : "",
+    MOUTHS[look.mouth] ? `<path d="${MOUTHS[look.mouth]}" fill="none" stroke="#5a2e22" stroke-width="1.5" stroke-linecap="round"/>` : "",
+    look.mouth === "lips" ? LIPS : "",
+    extra(look, "cigar"),
 
-  // Accessories
-  f += HATS[c.hat] || "";
-  if (c.cross) f += `<path d="M50 80 L50 92 M45.5 84 L54.5 84" stroke="#d9a441" stroke-width="2.2" stroke-linecap="round"/>`;
-  if (c.pearls) f += [...Array(7)].map((_, i) => `<circle cx="${41 + i * 3}" cy="${70 + Math.sin(i / 6 * Math.PI) * 4}" r="1.6" fill="#fff"/>`).join("");
+    // Accessories
+    HATS[look.hat] || "",
+    extra(look, "cross"),
+    extra(look, "pearls"),
+  ];
 
   // Shrink younger characters toward the bottom centre
-  const scale = c.child || 1;
-  const figure = scale < 1 ? `<g transform="translate(50 100) scale(${scale}) translate(-50 -100)">${f}</g>` : f;
+  const scale = look.child || 1;
+  const figure = scale < 1
+    ? `<g transform="translate(50 100) scale(${scale}) translate(-50 -100)">${parts.join("")}</g>`
+    : parts.join("");
 
-  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Portrait of ${name}" style="display:block;border-radius:50%;flex:none"><rect width="100" height="100" fill="${c.bg}"/>${figure}</svg>`;
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="Portrait of ${name}" ` +
+         `style="display:block;border-radius:50%;flex:none">` +
+         `<rect width="100" height="100" fill="${look.bg}"/>${figure}</svg>`;
 }

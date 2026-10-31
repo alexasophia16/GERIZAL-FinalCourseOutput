@@ -391,6 +391,46 @@ function answer(card, chosen) {
   });
 }
 
+/* ---------- Background music ---------- */
+const music = $("music");
+const muteBtn = $("mute");
+const MUTE_KEY = "noli-muted";
+music.volume = 0.35;
+
+// Remember the player's mute choice between visits (ignored if the browser blocks storage)
+function loadMuted() {
+  try { return localStorage.getItem(MUTE_KEY) === "1"; } catch { return false; }
+}
+function saveMuted(value) {
+  try { localStorage.setItem(MUTE_KEY, value ? "1" : "0"); } catch {}
+}
+
+function applyMute() {
+  music.muted = muted;
+  const label = muted ? "Unmute music" : "Mute music";
+  muteBtn.textContent = muted ? "🔇" : "🔊";
+  muteBtn.setAttribute("aria-pressed", String(muted));
+  muteBtn.setAttribute("aria-label", label);
+  muteBtn.title = label;
+}
+
+// Browsers only allow sound after the player interacts with the page
+function startMusic() {
+  if (music.paused) music.play().catch(() => {});
+}
+
+let muted = loadMuted();
+applyMute();
+
+muteBtn.addEventListener("click", () => {
+  muted = !muted;
+  saveMuted(muted);
+  applyMute();
+  startMusic();
+});
+document.addEventListener("pointerdown", startMusic, { once: true });
+document.addEventListener("keydown", startMusic, { once: true });
+
 /* ---------- Start ---------- */
 $("roll").addEventListener("click", roll);
 $("newgame").addEventListener("click", newGame);

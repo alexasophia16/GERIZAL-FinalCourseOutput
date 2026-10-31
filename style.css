@@ -129,6 +129,13 @@ h1 {
   --bs-btn-active-border-color: var(--muted);
 }
 
+/* Square icon button for the music toggle */
+.btn.mute {
+  --bs-btn-padding-x: 0;
+  width: 34px;
+  line-height: 1;
+}
+
 .btn-sm {
   --bs-btn-padding-x: 12px;
   --bs-btn-padding-y: 5px;
