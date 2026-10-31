@@ -449,7 +449,8 @@ document.addEventListener("keydown", startMusic, { once: true });
 const sfx = (() => {
   let ctx = null;
   let noiseBuffer = null;
-  const VOLUME = 0.5;
+  let output = null;    // every effect plays through this limiter
+  const VOLUME = 1.2;   // overall loudness of the sound effects
 
   // Create (or wake up) the audio engine; must happen during a click or key press
   function unlock() {
@@ -461,6 +462,15 @@ const sfx = (() => {
       noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
       const data = noiseBuffer.getChannelData(0);
       for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+      // Limiter: lets the effects be loud without crackling when several overlap
+      output = ctx.createDynamicsCompressor();
+      output.threshold.value = -6;
+      output.knee.value = 6;
+      output.ratio.value = 12;
+      output.attack.value = 0.003;
+      output.release.value = 0.15;
+      output.connect(ctx.destination);
     }
     if (ctx.state === "suspended") ctx.resume();
   }
@@ -479,7 +489,7 @@ const sfx = (() => {
     gain.gain.setValueAtTime(0.0001, t);
     gain.gain.exponentialRampToValueAtTime(vol * VOLUME, t + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    osc.connect(gain).connect(ctx.destination);
+    osc.connect(gain).connect(output);
     osc.start(t);
     osc.stop(t + dur + 0.02);
   }
@@ -497,7 +507,7 @@ const sfx = (() => {
     filter.Q.value = q;
     gain.gain.setValueAtTime(vol * VOLUME, t);
     gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(filter).connect(gain).connect(ctx.destination);
+    src.connect(filter).connect(gain).connect(output);
     src.start(t, Math.random() * 0.5);
     src.stop(t + dur + 0.02);
   }
