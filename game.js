@@ -174,6 +174,7 @@ async function walk(p, steps) {
 
     p.pos = next;
     drawTokens();
+    sfx.step(dir);
     const tile = $("t" + p.pos);
     tile.classList.add("flash");
     await wait(170);
@@ -194,11 +195,14 @@ async function roll() {
   die.classList.add("spin");
   for (let i = 0; i < 6; i++) {
     die.textContent = rollDie();
+    sfx.rattle();
     await wait(60);
   }
 
   const value = rollDie();
   die.textContent = value;
+  sfx.dieLand();
+  await wait(250);
 
   const p = players[turn];
   setStatus(`<b>${escapeHtml(p.name)}</b> rolled a <b>${value}</b>.`);
@@ -225,6 +229,7 @@ function win(p) {
   $("again").addEventListener("click", newGame);
   setStatus(`<b style="color:${p.color}">${escapeHtml(p.name)}</b> reached space ${GOAL}.`);
   confetti(p.color);
+  sfx.win();
 }
 
 /* ---------- Confetti ---------- */
@@ -327,8 +332,12 @@ function checkpoint(p) {
         </button>`).join("")}
     </div>`;
 
-  $("cp").querySelectorAll(".card").forEach(btn => btn.addEventListener("click", () => ask(+btn.dataset.i)));
+  $("cp").querySelectorAll(".card").forEach(btn => btn.addEventListener("click", () => {
+    sfx.cardPick();
+    ask(+btn.dataset.i);
+  }));
   cpModal.show();
+  sfx.checkpoint();
   focusInModal(".card");
   setStatus(`<b>${name}</b> landed on a Character Checkpoint.`);
 }
@@ -359,6 +368,8 @@ function answer(card, chosen) {
   const [, , correct, note] = card.q;
   const ok = chosen === correct;
   const steps = STEP[card.lv];
+  if (ok) sfx.correct();
+  else sfx.wrong();
 
   $("cp").querySelectorAll(".opt").forEach((btn, j) => {
     btn.disabled = true;
@@ -417,6 +428,7 @@ function applyMute() {
 // Browsers only allow sound after the player interacts with the page
 function startMusic() {
   if (music.paused) music.play().catch(() => {});
+  sfx.unlock();
 }
 
 let muted = loadMuted();
@@ -430,6 +442,120 @@ muteBtn.addEventListener("click", () => {
 });
 document.addEventListener("pointerdown", startMusic, { once: true });
 document.addEventListener("keydown", startMusic, { once: true });
+
+/* ---------- Sound effects ---------- */
+// Generated with the Web Audio API, so no sound files are needed.
+// These always play; the mute button only controls the background music.
+const sfx = (() => {
+  let ctx = null;
+  let noiseBuffer = null;
+  const VOLUME = 0.5;
+
+  // Create (or wake up) the audio engine; must happen during a click or key press
+  function unlock() {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!ctx) {
+      ctx = new AudioCtx();
+      // One second of white noise, reused for rattles and swishes
+      noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    }
+    if (ctx.state === "suspended") ctx.resume();
+  }
+
+  const ready = () => ctx !== null;
+
+  // A single note: frequency in Hz, optional slide to another pitch, quick fade out
+  function tone(freq, { start = 0, dur = 0.15, type = "sine", vol = 0.3, slideTo = null } = {}) {
+    if (!ready()) return;
+    const t = ctx.currentTime + start;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(vol * VOLUME, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + dur + 0.02);
+  }
+
+  // A short burst of filtered noise (clicks, rattles, paper swishes)
+  function noise({ start = 0, dur = 0.05, freq = 2000, q = 1, vol = 0.3, type = "bandpass" } = {}) {
+    if (!ready()) return;
+    const t = ctx.currentTime + start;
+    const src = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    src.buffer = noiseBuffer;
+    filter.type = type;
+    filter.frequency.setValueAtTime(freq, t);
+    filter.Q.value = q;
+    gain.gain.setValueAtTime(vol * VOLUME, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(filter).connect(gain).connect(ctx.destination);
+    src.start(t, Math.random() * 0.5);
+    src.stop(t + dur + 0.02);
+  }
+
+  // Play a list of [frequency, startTime, duration] notes
+  const melody = (notes, opts) => notes.forEach(([f, start, dur]) => tone(f, { ...opts, start, dur }));
+
+  return {
+    unlock,
+
+    // Die tumbling: a wooden clack at a random pitch
+    rattle() {
+      noise({ freq: 1200 + Math.random() * 1800, q: 4, dur: 0.04, vol: 0.5 });
+    },
+
+    // Die settling on its final face
+    dieLand() {
+      noise({ freq: 700, q: 3, dur: 0.08, vol: 0.6 });
+      tone(180, { dur: 0.12, type: "triangle", vol: 0.4, slideTo: 120 });
+    },
+
+    // One step on the board: higher when moving forward, lower when falling back
+    step(dir) {
+      tone(dir > 0 ? 520 : 300, { dur: 0.08, type: "triangle", vol: 0.25, slideTo: dir > 0 ? 640 : 240 });
+    },
+
+    // Landing on a Character Checkpoint: a mysterious little chime
+    checkpoint() {
+      melody([[392, 0, 0.3], [523, 0.1, 0.3], [659, 0.2, 0.3], [784, 0.3, 0.5]], { type: "triangle", vol: 0.22 });
+    },
+
+    // Choosing a card: a paper swish
+    cardPick() {
+      noise({ freq: 3000, q: 0.7, dur: 0.18, vol: 0.35, type: "highpass" });
+      tone(880, { dur: 0.08, type: "sine", vol: 0.15 });
+    },
+
+    // Right answer: bright rising notes
+    correct() {
+      melody([[523, 0, 0.15], [659, 0.1, 0.15], [784, 0.2, 0.15], [1047, 0.3, 0.35]], { type: "triangle", vol: 0.3 });
+    },
+
+    // Wrong answer: two falling "uh-oh" buzzes, pitched high enough for laptop and phone speakers
+    wrong() {
+      tone(392, { dur: 0.22, type: "square", vol: 0.35, slideTo: 370 });
+      tone(294, { start: 0.24, dur: 0.45, type: "square", vol: 0.35, slideTo: 220 });
+    },
+
+    // Someone wins: a short fanfare
+    win() {
+      melody([
+        [523, 0, 0.18], [523, 0.18, 0.12], [523, 0.3, 0.12], [698, 0.42, 0.5],
+        [659, 0.9, 0.18], [698, 1.08, 0.18], [880, 1.26, 0.7],
+      ], { type: "square", vol: 0.12 });
+      melody([[262, 0.42, 0.5], [349, 1.26, 0.7]], { type: "triangle", vol: 0.2 });
+    },
+  };
+})();
 
 /* ---------- Start ---------- */
 $("roll").addEventListener("click", roll);
